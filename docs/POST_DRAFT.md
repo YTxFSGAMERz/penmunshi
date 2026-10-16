@@ -31,16 +31,16 @@ Every penetration tester knows the feeling: the actual hacking was finished on T
 ### Three Core Views of the Workspace
 
 1. **Capturing a Finding**: Paste raw tester notes, paste tool outputs, or drop screenshots. Secrets and PII are scrubbed immediately.
-![Capture Finding](docs/assets/01-capture-1280x800.png)
+![Capture Finding](https://raw.githubusercontent.com/YTxFSGAMERz/penmunshi/100cc5a/docs/assets/01-capture-1280x800.png)
 
 2. **Automated Bounding Box Redaction**: RapidOCR parses text coordinates, blacks out sensitive spans with opaque Pillow rectangles, and re-scans the image to confirm zero leakage. Testers can inspect the mask boxes in the browser.
-![Mask Box Inspection](docs/assets/02-draft-inspect-masks.png)
+![Mask Box Inspection](https://raw.githubusercontent.com/YTxFSGAMERz/penmunshi/100cc5a/docs/assets/02-draft-inspect-masks.png)
 
 3. **Claim-to-Evidence Navigation**: Every claim is mapped to the source evidence. Clicking a statement jumps directly to the highlighted quote.
-![Evidence Highlight](docs/assets/02-claim-highlighted.png)
+![Evidence Highlight](https://raw.githubusercontent.com/YTxFSGAMERz/penmunshi/100cc5a/docs/assets/02-claim-highlighted.png)
 
 4. **Agency-Grade Report Export**: Exports clean HTML, Word DOCX with Table of Contents and running headers/footers, and Markdown.
-![HTML Report](docs/assets/03-report-html.png)
+![HTML Report](https://raw.githubusercontent.com/YTxFSGAMERz/penmunshi/100cc5a/docs/assets/03-report-html.png)
 
 ---
 
