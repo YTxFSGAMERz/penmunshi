@@ -172,6 +172,8 @@ Backend: ollama; Model: gemma4:e4b; Split: heldout (8 cases)
 ## 10. Partner Technologies
 
 - **Google Gemma 4 (`gemma4:e4b`)**: The foundational engine behind PenMunshi. Selected for its exceptional multimodal vision capabilities, compact 7.5B footprint, and Apache-2.0 open-weight license that allows unrestricted local deployment.
+- **DevRelay / Entire**: Embedded agent build session transcript documenting the end-to-end development journey, automated testing iterations, and architecture invariants:
+  {% agent_session 912 %}
 - **.tech Domain**: Live demonstration site hosted at [penmunshi.tech](https://penmunshi.tech) (`TODO(human)`: claim domain via Hacktoberfest promo and attach to GitHub Pages).
 - **GitHub Actions**: Continuous integration running `ruff check .` and model-free pytest verification suite across 101 unit tests.
 

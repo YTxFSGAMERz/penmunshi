@@ -43,7 +43,11 @@ Actions requiring human action or credentials before the Hacktoberfest Week 2 su
 ---
 
 ## 5. DevRelay & DEV.to Publishing
-- [ ] Register `PenMunshi` in DevRelay (`create_project`).
-- [ ] Submit the agent session transcript to DevRelay (`submit_agent_session`) for the *Best Use of Entire / DevRelay* partner track.
-- [ ] Push the draft post to DEV via `create_article` (`published: false`).
-- [ ] Review formatting, paste the video and `.tech` domain links, and hit **Publish** on DEV.to with tag `#hf26challenge`.
+- [x] Register `PenMunshi` in DevRelay (`create_project`): **ID `01a142fe-febd-36c8-249e-d08fea4a197d`**
+- [x] Submit the agent session transcript to DevRelay (`submit_agent_session`): **Session ID `912`**
+  - Public Session URL: [dev.to/agent_sessions/building-penmunshi-offline-first-pentest-copilot-with-local-gemma-4-besvho](https://dev.to/agent_sessions/building-penmunshi-offline-first-pentest-copilot-with-local-gemma-4-besvho)
+  - Embedded Liquid Tag: `{% agent_session 912 %}`
+- [x] Stage draft post on DEV (`create_article`): **Article ID `4859871`**
+  - **Edit & Preview URL**: [dev.to edit draft](https://dev.to/farhans123456/penmunshi-an-offline-pentest-report-copilot-where-gemma-writes-and-code-checks-every-fact-464n-temp-slug-6700678/edit)
+- [ ] Review draft on DEV, paste your final video link & `.tech` domain, and hit **Publish** before the deadline (**Oct 18, 11:59 PM PDT**).
+
