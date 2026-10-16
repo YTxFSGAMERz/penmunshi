@@ -1,0 +1,31 @@
+{
+  "id": "graphql-introspection",
+  "split": "dev",
+  "title": "GraphQL schema introspection enabled in production",
+  "asset": "https://shop.acme.test/graphql",
+  "notes": "GraphQL introspection query is enabled in production on POST /graphql, disclosing the entire data model including private queries, admin types, and mutation signatures.",
+  "evidence": [
+    {
+      "name": "graphql-intro.png",
+      "file": "assets/graphql-intro.png",
+      "text": "POST /graphql HTTP/1.1\nHost: shop.acme.test\nContent-Type: application/json\n\n{\"query\":\"query { __schema { types { name } } }\"}\n\nHTTP/1.1 200 OK\n{\"data\":{\"__schema\":{\"types\":[{\"name\":\"User\"},{\"name\":\"CreditCard\"},{\"name\":\"AdminQuery\"}]}}}"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+    "cwe": [
+      "200"
+    ],
+    "cves": [],
+    "secrets": [],
+    "score": 5.3,
+    "severity": "Medium"
+  },
+  "faults": {
+    "cwe": "99999",
+    "severity_text": "High",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

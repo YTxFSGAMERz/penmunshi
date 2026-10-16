@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PenMunshi</title>
+<style>
+  /* Design notes: a scribe's worksheet. Verification is the visual language:
+     solid underline = quote found in the evidence, dashed = not found, black bar = redacted.
+     System fonts only, so the page works fully offline. */
+  :root {
+    --sheet: #F1F3EF; --doc: #FBFCFA; --ink: #18212B; --muted: #5B6773; --rule: #D5DAD3;
+    --pen: #243F9E; --pen-ink: #FFFFFF; --ok: #1E7B54; --warn: #9A6700; --bad: #B3261E; --bar: #0E1217;
+    --crit: #9B1239; --high: #C2410C; --med: #A16207; --low: #1D5F8A; --info: #5B6773; --chip-ink: #FFFFFF;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --sans: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --mono: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --sheet: #11161C; --doc: #171E26; --ink: #E6EAEE; --muted: #9AA6B2; --rule: #2B3540;
+      --pen: #8EA2F5; --pen-ink: #0B1020; --ok: #55C792; --warn: #E3B341; --bad: #FF8A80; --bar: #000000;
+      --crit: #FF6B8B; --high: #FF9A5C; --med: #E3B341; --low: #6CB6E8; --info: #9AA6B2; --chip-ink: #0B1020;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { color-scheme: light dark; }
+  body { margin: 0; background: var(--sheet); color: var(--ink); font: 15px/1.55 var(--sans); }
+  h1, h2, h3 { font-family: var(--serif); line-height: 1.25; margin: 0; }
+  button, input, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--pen); outline-offset: 2px; }
+
+  .top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; padding: 16px 28px;
+         border-bottom: 1px solid var(--rule); background: var(--doc); }
+  .top h1 { font-size: 1.55rem; }
+  .top .tag { color: var(--muted); flex: 1 1 260px; }
+  .status { font-size: .9rem; padding: 3px 12px; border: 1px solid var(--rule); border-radius: 999px; }
+  .status::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+                    background: var(--muted); margin-right: 8px; }
+  .status.ok::before { background: var(--ok); } .status.bad::before { background: var(--bad); }
+
+  .layout { display: grid; grid-template-columns: 310px minmax(0, 1fr); gap: 28px; padding: 24px 28px 80px;
+            max-width: 1280px; margin: 0 auto; }
+  @media (max-width: 920px) { .layout { grid-template-columns: 1fr; padding: 16px; } }
+
+  .rail { position: sticky; top: 16px; align-self: start; display: grid; gap: 22px; }
+  @media (max-width: 920px) { .rail { position: static; } }
+  .rail h2 { font-size: 1.05rem; margin-bottom: 8px; }
+  .field { display: grid; gap: 3px; margin-bottom: 10px; }
+  .field label, .lbl { font-size: .88rem; color: var(--muted); }
+  input[type=text], textarea { width: 100%; padding: 8px 10px; background: var(--doc);
+        border: 1px solid var(--rule); border-radius: 4px; }
+  textarea { resize: vertical; min-height: 5.5rem; }
+  textarea.mono { font: 13px/1.5 var(--mono); }
+
+  .btn { padding: 8px 16px; border-radius: 4px; border: 1px solid var(--rule); background: var(--doc); cursor: pointer; }
+  .btn:hover { border-color: var(--muted); }
+  .btn.primary { background: var(--pen); color: var(--pen-ink); border-color: var(--pen); font-weight: 600; }
+  .btn:disabled { opacity: .55; cursor: progress; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .basket { list-style: none; margin: 0; padding: 0; border: 1px solid var(--rule); border-radius: 4px; background: var(--doc); }
+  .basket li { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; padding: 7px 10px;
+               border-bottom: 1px solid var(--rule); }
+  .basket li:last-child { border-bottom: 0; }
+  .basket .empty { color: var(--muted); padding: 10px; display: block; }
+  .link { background: none; border: 0; color: var(--muted); cursor: pointer; text-decoration: underline; padding: 0; }
+
+  .chip { display: inline-block; padding: 1px 9px; border-radius: 3px; background: var(--info); color: var(--chip-ink);
+          font-size: .82rem; font-weight: 600; white-space: nowrap; }
+  .chip.Critical { background: var(--crit); } .chip.High { background: var(--high); }
+  .chip.Medium { background: var(--med); } .chip.Low { background: var(--low); }
+
+  main { display: grid; gap: 28px; min-width: 0; }
+  .sheet { background: var(--doc); border: 1px solid var(--rule); border-radius: 6px; padding: 22px 24px; }
+  .sheet > h2 { font-size: 1.3rem; margin-bottom: 4px; }
+  .hint { color: var(--muted); margin: 0 0 14px; }
+
+  .drop { border: 1.5px dashed var(--rule); border-radius: 6px; padding: 16px; text-align: center; color: var(--muted);
+          cursor: pointer; margin-bottom: 8px; }
+  .drop.over { border-color: var(--pen); color: var(--ink); }
+  .thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .thumb { display: grid; gap: 2px; width: 112px; font-size: .78rem; color: var(--muted); }
+  .thumb img { width: 112px; height: 72px; object-fit: cover; border: 1px solid var(--rule); border-radius: 3px; }
+  .thumb span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .busy { color: var(--muted); margin-top: 10px; min-height: 1.4em; }
+  .err { color: var(--bad); margin-top: 10px; }
+
+  .draft header { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 6px; }
+  .draft h2 { font-size: 1.4rem; flex: 1 1 320px; }
+  .checks { margin: 8px 0 16px; padding: 10px 14px; border-left: 4px solid var(--rule); background: var(--sheet); }
+  .checks.ready { border-color: var(--ok); } .checks.review { border-color: var(--warn); }
+  .ok { color: var(--ok); } .warn { color: var(--warn); } .bad { color: var(--bad); }
+  dl.meta { display: grid; grid-template-columns: 9.5rem 1fr; gap: 4px 12px; margin: 0 0 12px; }
+  dl.meta dt { color: var(--muted); } dl.meta dd { margin: 0; overflow-wrap: anywhere; }
+  code, .mono { font: 13px/1.5 var(--mono); }
+  .draft h3 { font-size: 1.02rem; margin: 18px 0 4px; }
+  .draft p { margin: 0 0 6px; } .draft ol, .draft ul { margin: 0 0 6px; padding-left: 1.3rem; }
+
+  table.claims { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  .claims th, .claims td { text-align: left; vertical-align: top; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+  .claims th { color: var(--muted); font-weight: 600; }
+  .claim-row { transition: background .15s; }
+  .claim-row.clickable { cursor: pointer; }
+  .claim-row.clickable:hover { background: var(--sheet); }
+  .q-yes { text-decoration: underline solid var(--ok); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+  .q-no { text-decoration: underline dashed var(--warn); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+  mark.quote-match {
+    background: rgba(36, 63, 158, 0.16);
+    color: inherit;
+    border-bottom: 2px solid var(--ok);
+    padding: 1px 3px;
+    border-radius: 2px;
+  }
+
+  /* Screenshot redaction preview */
+  .screenshot-card {
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: var(--sheet);
+    padding: 14px;
+    margin: 12px 0;
+  }
+  .screenshot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: .9rem;
+  }
+  .screenshot-view {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    border-radius: 4px;
+    border: 1px solid var(--rule);
+    background: #0E1217;
+  }
+  .screenshot-view img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+  .screenshot-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+  }
+  .mask-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: .8rem;
+    font-weight: 600;
+  }
+  .mask-pill.active { background: #000; color: #fff; }
+  .mask-pill.clean { background: var(--ok); color: #fff; }
+
+  .replay-banner {
+    background: #FFF3CD;
+    color: #664D03;
+    border-bottom: 1px solid #FFE69C;
+    padding: 10px 24px;
+    font-size: .92rem;
+    text-align: center;
+    line-height: 1.45;
+  }
+  @media (prefers-color-scheme: dark) {
+    .replay-banner {
+      background: #2E2405;
+      color: #FFDA6A;
+      border-bottom: 1px solid #664D03;
+    }
+  }
+  .replay-banner strong { font-weight: 700; }
+  .replay-banner code { font-size: .9em; background: rgba(0,0,0,0.08); padding: 1px 4px; border-radius: 3px; }
+
+  pre.evidence { margin: 4px 0 8px; padding: 10px 12px; background: #0F141A; color: #E6E9EC; border-radius: 4px;
+                 font: 12.5px/1.5 var(--mono); white-space: pre-wrap; overflow-x: auto; }
+  .bar { background: #000; color: #fff; padding: 0 6px; border-radius: 2px; font-size: .85em; border: 1px solid #fff3; }
+  details { margin: 6px 0; } summary { cursor: pointer; color: var(--muted); }
+  .banner { padding: 8px 12px; border: 1px solid var(--warn); border-radius: 4px; margin-bottom: 14px; }
+  @media (prefers-reduced-motion: no-preference) { .btn { transition: border-color .15s; } }
+</style>
+</head>
+<body>
+<div id="replay-banner" class="replay-banner" hidden>
+  <strong>Recorded Replay:</strong> Showing real offline run on demo engagement.
+  Start PenMunshi locally with Ollama (<code>penmunshi serve</code>) for live Gemma 4 analysis.
+  <em>No model runs in this hosted browser demo.</em>
+</div>
+<div class="top">
+  <h1>PenMunshi</h1>
+  <p class="tag" style="margin:0">Pentest report copilot. The model writes, software checks the facts. Nothing leaves this machine.</p>
+  <div id="status" class="status" role="status" aria-live="polite">Checking local model...</div>
+</div>
+
+<div class="layout">
+  <aside class="rail" aria-label="Report">
+    <section>
+      <h2>Engagement</h2>
+      <div class="field"><label for="e-client">Client</label><input id="e-client" type="text" value="Client (demo)"></div>
+      <div class="field"><label for="e-project">Project</label><input id="e-project" type="text" value="Web application assessment"></div>
+      <div class="field"><label for="e-tester">Tester</label><input id="e-tester" type="text"></div>
+      <div class="field"><label for="e-dates">Dates</label><input id="e-dates" type="text" placeholder="13 Oct to 17 Oct 2026"></div>
+      <div class="field"><label for="e-reviewed">Reviewed by</label><input id="e-reviewed" type="text" placeholder="Name of the human who signs off"></div>
+    </section>
+    <section>
+      <h2>Findings in this report</h2>
+      <ul id="basket" class="basket"><li><span class="empty">None yet. Analyze a finding, then add it.</span></li></ul>
+    </section>
+    <section>
+      <h2>Executive summary</h2>
+      <div class="field"><textarea id="summary" rows="5" aria-label="Executive summary" placeholder="Write it yourself, or let the model draft it from your findings."></textarea></div>
+      <div class="row"><button id="btn-summary" class="btn" type="button">Draft summary</button></div>
+    </section>
+    <section>
+      <h2>Export</h2>
+      <div class="row">
+        <button class="btn" data-fmt="html" type="button">HTML</button>
+        <button class="btn" data-fmt="md" type="button">Markdown</button>
+        <button class="btn" data-fmt="docx" type="button">Word</button>
+      </div>
+      <p class="hint" style="margin-top:8px">Nothing is saved in the browser. Export before you close this tab.</p>
+    </section>
+  </aside>
+
+  <main>
+    <section class="sheet" aria-labelledby="cap-h">
+      <h2 id="cap-h">Capture a finding</h2>
+      <p class="hint">Paste your raw notes and drop in screenshots. Passwords, keys, tokens and personal data are masked before the model sees anything.</p>
+      <div class="field"><label for="notes">Your notes</label>
+        <textarea id="notes" rows="8" placeholder="What you tested, the payload, what happened, where."></textarea></div>
+      <div class="field"><label for="tool">Tool output (optional)</label>
+        <textarea id="tool" class="mono" rows="4" placeholder="Paste Burp, nmap, nuclei or curl output."></textarea></div>
+      <span class="lbl">Screenshots</span>
+      <div id="drop" class="drop" tabindex="0" role="button" aria-label="Add screenshots">Drop screenshots here, paste with Ctrl+V, or click to choose files</div>
+      <input id="file" type="file" accept="image/*" multiple hidden>
+      <div id="thumbs" class="thumbs"></div>
+      <details><summary>Set the CVSS vector yourself</summary>
+        <div class="field" style="margin-top:8px"><label for="vector">CVSS v3.1 vector (your vector always beats the model's)</label>
+          <input id="vector" type="text" placeholder="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"></div></details>
+      <div class="row" style="margin-top:12px">
+        <button id="btn-analyze" class="btn primary" type="button">Analyze finding</button>
+        <button id="btn-clear" class="btn" type="button">Clear</button>
+      </div>
+      <div id="busy" class="busy" aria-live="polite"></div>
+      <div id="err" class="err" role="alert"></div>
+    </section>
+
+    <section id="draft" class="sheet draft" aria-labelledby="draft-h" hidden></section>
+  </main>
+</div>
+
+<script>
+"use strict";
+const $ = (sel, root = document) => root.querySelector(sel);
+const state = { files: [], basket: [], current: null, busyTimer: null };
+window.state = state;
+
+/* Build DOM with textContent only: evidence can contain HTML payloads, never trust it. */
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v === false || v == null) continue;
+    if (k === "class") el.className = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const kid of kids.flat()) {
+    if (kid == null || kid === false) continue;
+    el.append(kid instanceof Node ? kid : document.createTextNode(String(kid)));
+  }
+  return el;
+}
+const label = (s) => (s === "None" ? "Informational" : s);
+
+/* Show [REDACTED:kind] markers as black bars. */
+function withBars(text) {
+  const out = [];
+  let last = 0;
+  const re = /\[REDACTED:([a-z_]+)\]/g;
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) out.push(text.slice(last, m.index));
+    out.push(h("span", { class: "bar", title: "masked " + m[1] }, m[1]));
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
+
+/* ---------------- status & recorded replay ---------------- */
+function loadDemoData(data) {
+  if (data.engagement) {
+    if (data.engagement.client) $("#e-client").value = data.engagement.client;
+    if (data.engagement.project) $("#e-project").value = data.engagement.project;
+    if (data.engagement.tester) $("#e-tester").value = data.engagement.tester;
+    if (data.engagement.date_range) $("#e-dates").value = data.engagement.date_range;
+  }
+  if (data.findings && data.findings.length) {
+    state.basket = [...data.findings];
+    renderBasket();
+    state.current = data.findings[0];
+    renderDraft(state.current);
+    $("#notes").value = state.current.title + "\nObserved payload tested in staging environment.";
+    if (state.current.evidence && state.current.evidence.length) {
+      const toolEv = state.current.evidence.find((e) => e.kind === "text");
+      if (toolEv) $("#tool").value = toolEv.transcript;
+    }
+    $("#vector").value = state.current.cvss_vector || "";
+  }
+}
+
+async function checkHealth() {
+  const el = $("#status");
+  const banner = $("#replay-banner");
+  try {
+    const r = await fetch("/api/health");
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const j = await r.json();
+    if (!j.reachable) { el.className = "status bad"; el.textContent = "Ollama not reachable. Start it, then reload."; return; }
+    if (!j.model_present) { el.className = "status bad"; el.textContent = "Model missing. Run: ollama pull " + j.model; return; }
+    el.className = "status ok";
+    el.textContent = j.backend === "fake" ? "Fake backend: no real model" : "Local model ready: " + j.model;
+    if (banner) banner.hidden = true;
+    state.offlineReplay = false;
+  } catch (e) {
+    try {
+      const demoRes = await fetch("demo-data.json");
+      if (demoRes.ok) {
+        const demoData = await demoRes.json();
+        state.offlineReplay = true;
+        state.demoData = demoData;
+        el.className = "status";
+        el.textContent = "Offline Replay";
+        if (banner) banner.hidden = false;
+        loadDemoData(demoData);
+        return;
+      }
+    } catch (demoErr) {}
+    el.className = "status bad";
+    el.textContent = "Backend offline";
+  }
+}
+
+/* ---------------- screenshots ---------------- */
+function addFiles(list) {
+  for (const f of list) if (f.type.startsWith("image/")) state.files.push(f);
+  renderThumbs();
+}
+function renderThumbs() {
+  const box = $("#thumbs");
+  box.replaceChildren(...state.files.map((f, i) => h("div", { class: "thumb" },
+    h("img", { src: URL.createObjectURL(f), alt: f.name }),
+    h("span", { title: f.name }, f.name),
+    h("button", { class: "link", type: "button", onclick: () => { state.files.splice(i, 1); renderThumbs(); } }, "Remove"))));
+}
+window.renderThumbs = renderThumbs;
+const drop = $("#drop"), picker = $("#file");
+drop.addEventListener("click", () => picker.click());
+drop.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); picker.click(); } });
+picker.addEventListener("change", () => { addFiles(picker.files); picker.value = ""; });
+["dragenter", "dragover"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", (e) => addFiles(e.dataTransfer.files));
+document.addEventListener("paste", (e) => {
+  const imgs = [...(e.clipboardData?.files || [])].filter((f) => f.type.startsWith("image/"));
+  if (imgs.length) { addFiles(imgs.map((f, i) => new File([f], "pasted-" + Date.now() + "-" + i + ".png", { type: f.type }))); }
+});
+
+/* ---------------- analyze ---------------- */
+function setBusy(on) {
+  const b = $("#btn-analyze");
+  b.disabled = on;
+  clearInterval(state.busyTimer);
+  if (!on) { $("#busy").textContent = ""; return; }
+  const t0 = Date.now();
+  const tick = () => { $("#busy").textContent = "Analyzing locally for " + Math.round((Date.now() - t0) / 1000) +
+    " s. The first run loads the model and can take a minute."; };
+  tick(); state.busyTimer = setInterval(tick, 1000);
+}
+
+async function analyze() {
+  $("#err").textContent = "";
+  if (state.offlineReplay) {
+    setBusy(true);
+    setTimeout(() => {
+      setBusy(false);
+      if (state.basket.length) {
+        state.current = state.basket[0];
+        renderDraft(state.current);
+      }
+    }, 600);
+    return;
+  }
+  const fd = new FormData();
+  fd.append("notes", $("#notes").value);
+  fd.append("tool_output", $("#tool").value);
+  fd.append("tester_vector", $("#vector").value.trim());
+  fd.append("finding_id", "F-" + String(state.basket.length + 1).padStart(3, "0"));
+  state.files.forEach((f) => fd.append("files", f, f.name));
+  setBusy(true);
+  try {
+    const r = await fetch("/api/analyze", { method: "POST", body: fd });
+    if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.detail || ("Server error " + r.status)); }
+    state.current = await r.json();
+    renderDraft(state.current);
+  } catch (e) {
+    $("#err").textContent = "Could not analyze: " + e.message;
+  } finally { setBusy(false); }
+}
+
+/* ---------------- claim to evidence navigation ---------------- */
+function scrollToEvidenceQuote(evidenceName, quote, qStart, qEnd) {
+  if (evidenceName === "notes") {
+    const notesEl = document.getElementById("notes");
+    if (notesEl) {
+      notesEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (qStart != null && qEnd != null) {
+        notesEl.focus();
+        try { notesEl.setSelectionRange(qStart, qEnd); } catch (err) {}
+      }
+    }
+  }
+  const safeId = "ev-" + String(evidenceName || "").replace(/[^a-zA-Z0-9_-]/g, "_");
+  let details = document.getElementById(safeId);
+  if (!details) {
+    details = document.querySelector("#draft details");
+  }
+  if (!details) return;
+  details.open = true;
+  const pre = details.querySelector("pre.evidence");
+  if (!pre) return;
+  const rawText = details.dataset.rawTranscript || pre.textContent || "";
+  if (!rawText) return;
+
+  let s = qStart, e = qEnd;
+  if (s == null || e == null || s < 0 || e > rawText.length) {
+    const idx = rawText.indexOf(quote);
+    if (idx !== -1) {
+      s = idx;
+      e = idx + quote.length;
+    }
+  }
+
+  if (s != null && e != null && s >= 0 && e <= rawText.length) {
+    const before = rawText.slice(0, s);
+    const match = rawText.slice(s, e);
+    const after = rawText.slice(e);
+    pre.replaceChildren(
+      ...withBars(before),
+      h("mark", { class: "quote-match", title: "Claim quote: " + quote }, ...withBars(match)),
+      ...withBars(after)
+    );
+    const mark = pre.querySelector("mark.quote-match");
+    if (mark) {
+      mark.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  } else {
+    details.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+}
+
+/* ---------------- draft view ---------------- */
+function section(title, ...body) { return [h("h3", {}, title), ...body.flat()]; }
+
+function renderDraft(f) {
+  const box = $("#draft");
+  const okClaims = f.claims.filter((c) => c.supported).length;
+  const parts = [];
+  parts.push(h("span", { class: okClaims === f.claims.length ? "ok" : "warn" }, okClaims + " of " + f.claims.length + " quotes found in your evidence"));
+  parts.push(h("span", {}, f.secrets.length + " secret(s) masked"));
+  parts.push(h("span", { class: f.removed_ids.length ? "warn" : "" }, f.removed_ids.length + " identifier(s) removed"));
+  const verdict = f.status === "ready" ? "Ready for your review." : "Needs your review before it goes in a report.";
+  const checks = h("div", { class: "checks " + (f.status === "ready" ? "ready" : "review") },
+    h("strong", {}, verdict), " ", parts.flatMap((p, i) => (i ? [". ", p] : [p])), ".");
+
+  const meta = h("dl", { class: "meta" },
+    h("dt", {}, "CVSS vector"), h("dd", {}, h("code", {}, f.cvss_vector || "n/a"), " computed by software" + (f.severity_source === "tester" ? ", set by you" : "")),
+    h("dt", {}, "Affected asset"), h("dd", {}, f.affected_asset || "-"),
+    h("dt", {}, "Weakness"), h("dd", {}, f.cwe.length ? f.cwe.map((c) => h("div", {}, c.id + " " + c.name + (c.verified ? "" : " (unverified)"))) : "-"),
+    h("dt", {}, "CVE"), h("dd", {}, f.cve.length ? f.cve.map((c) => c.id + (c.known_exploited ? " (known exploited)" : "")).join(", ") : "-"),
+    h("dt", {}, "Confidence"), h("dd", {}, f.confidence.replaceAll("_", " ")));
+
+  const claimRows = f.claims.map((c) => {
+    const isSupported = Boolean(c.supported);
+    return h("tr", {
+      class: "claim-row" + (isSupported ? " clickable" : " unsupported"),
+      title: isSupported ? "Click to view quote in evidence" : "Quote not found in evidence",
+      onclick: () => {
+        if (isSupported && c.found_in) {
+          scrollToEvidenceQuote(c.found_in, c.quote, c.quote_start, c.quote_end);
+        }
+      }
+    },
+    h("td", {}, c.text),
+    h("td", {}, c.found_in || c.evidence_ref),
+    h("td", {}, h("span", {
+      class: "mono " + (isSupported ? "q-yes" : "q-no"),
+      title: isSupported ? "Verified at offset [" + (c.quote_start ?? "?") + ":" + (c.quote_end ?? "?") + "]" : "Quote not found in evidence"
+    }, withBars(c.quote))),
+    h("td", { class: isSupported ? "ok" : "warn" }, isSupported ? "Found" : "Quote not found"));
+  });
+
+  const removed = f.removed_ids.map((r) => h("li", {}, h("code", {}, r.id), " (" + r.kind.toUpperCase() + "): " + r.reason));
+  const secrets = f.secrets.map((s) => h("li", {}, s.kind + " ", h("code", {}, s.preview), " in " + s.source + (s.checksum_ok ? ", checksum valid" : "")));
+  const lint = f.lint.map((i) => h("li", { class: i.level === "error" ? "bad" : i.level === "warn" ? "warn" : "" }, i.message));
+  const evid = f.evidence.filter((e) => e.transcript.trim()).map((e) => {
+    const safeId = "ev-" + String(e.name || "").replace(/[^a-zA-Z0-9_-]/g, "_");
+    const d = h("details", { id: safeId },
+      h("summary", {}, e.name + (e.secrets ? " (" + e.secrets + " masked)" : "")),
+      h("pre", { class: "evidence" }, withBars(e.transcript)));
+    d.dataset.rawTranscript = e.transcript;
+    return d;
+  });
+
+  const screenshotEvidence = f.evidence.filter((e) => e.kind === "screenshot" && e.redacted_image_data_uri);
+  const screenshots = screenshotEvidence.map((e) => {
+    const maskCount = e.boxes ? e.boxes.length : 0;
+    const countLabel = maskCount > 0 ? maskCount + " region(s) masked" : "0 secrets detected";
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "screenshot-overlay");
+    svg.style.display = "none";
+
+    const img = h("img", {
+      src: e.redacted_image_data_uri,
+      alt: "Redacted screenshot: " + e.name,
+      onload: () => {
+        if (img.naturalWidth && img.naturalHeight) {
+          svg.setAttribute("viewBox", `0 0 ${img.naturalWidth} ${img.naturalHeight}`);
+          (e.boxes || []).forEach((b) => {
+            const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            rect.setAttribute("x", b.x);
+            rect.setAttribute("y", b.y);
+            rect.setAttribute("width", b.w);
+            rect.setAttribute("height", b.h);
+            rect.setAttribute("fill", "none");
+            rect.setAttribute("stroke", "#FF8A80");
+            rect.setAttribute("stroke-width", "2");
+            rect.setAttribute("stroke-dasharray", "4 2");
+            svg.appendChild(rect);
+          });
+        }
+      }
+    });
+
+    let inspecting = false;
+    const toggleBtn = h("button", {
+      class: "btn",
+      type: "button",
+      style: "font-size:.82rem; padding:3px 10px;",
+      onclick: () => {
+        inspecting = !inspecting;
+        svg.style.display = inspecting ? "block" : "none";
+        toggleBtn.textContent = inspecting ? "Hide inspection outline" : "Inspect mask boxes";
+      }
+    }, "Inspect mask boxes");
+
+    return h("div", { class: "screenshot-card" },
+      h("div", { class: "screenshot-header" },
+        h("strong", {}, e.name),
+        h("div", { class: "row", style: "align-items:center;" },
+          h("span", { class: "mask-pill " + (maskCount ? "active" : "clean") }, countLabel),
+          maskCount > 0 ? toggleBtn : false
+        )
+      ),
+      h("div", { class: "screenshot-view" }, img, svg),
+      h("p", { class: "hint", style: "margin:6px 0 0; font-size:.82rem;" },
+        "Client-safe redacted image. Original raw pixels are never stored or sent to the browser.")
+    );
+  });
+
+  box.replaceChildren(
+    h("header", {},
+      h("h2", {}, f.title),
+      h("span", { class: "chip " + f.severity }, label(f.severity) + (f.cvss_score != null ? " " + f.cvss_score.toFixed(1) : ""))),
+    checks, meta,
+    ...section("Summary", h("p", {}, f.summary)),
+    ...section("Description", h("p", {}, f.description)),
+    ...section("Steps to reproduce", f.steps_to_reproduce.length ? h("ol", {}, f.steps_to_reproduce.map((s) => h("li", {}, s))) : h("p", { class: "bad" }, "None. A client cannot verify this.")),
+    ...section("Impact", h("p", {}, f.impact)),
+    ...section("Remediation", f.remediation.length ? h("ul", {}, f.remediation.map((s) => h("li", {}, s))) : h("p", { class: "bad" }, "None.")),
+    ...(f.claims.length ? section("Evidence checks",
+      h("p", { class: "hint" }, "Every statement must quote your notes or screenshots. Solid underline: quote found. Dashed: not found, so check it yourself."),
+      h("table", { class: "claims" }, h("thead", {}, h("tr", {}, ["Statement", "Source", "Quote", "Check"].map((x) => h("th", {}, x)))), h("tbody", {}, claimRows))) : []),
+    ...(screenshots.length ? section("Screenshots", screenshots) : []),
+    ...(removed.length ? section("Removed by verification", h("ul", {}, removed)) : []),
+    ...(secrets.length ? section("Masked before the model saw it", h("ul", {}, secrets)) : []),
+    ...(lint.length ? section("Review notes", h("ul", {}, lint)) : []),
+    ...(evid.length ? section("Evidence as read by the model", evid) : []),
+    h("div", { class: "row", style: "margin-top:18px" },
+      h("button", { class: "btn primary", type: "button", onclick: addToBasket }, "Add to report")));
+  box.hidden = false;
+  box.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* ---------------- basket + export ---------------- */
+function addToBasket() {
+  if (!state.current) return;
+  state.basket.push(state.current);
+  state.current = null;
+  $("#draft").hidden = true;
+  $("#notes").value = ""; $("#tool").value = ""; $("#vector").value = "";
+  state.files = []; renderThumbs(); renderBasket();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function renderBasket() {
+  const ul = $("#basket");
+  if (!state.basket.length) { ul.replaceChildren(h("li", {}, h("span", { class: "empty" }, "None yet. Analyze a finding, then add it."))); return; }
+  ul.replaceChildren(...state.basket.map((f, i) => h("li", {},
+    h("span", { class: "chip " + f.severity }, label(f.severity)),
+    h("span", {}, f.title),
+    h("button", { class: "link", type: "button", onclick: () => { state.basket.splice(i, 1); renderBasket(); } }, "Remove"))));
+}
+function engagement() {
+  return { client: $("#e-client").value, project: $("#e-project").value, tester: $("#e-tester").value,
+           date_range: $("#e-dates").value, reviewed_by: $("#e-reviewed").value, scope: [], methodology: "OWASP WSTG" };
+}
+async function exportReport(fmt) {
+  if (!state.basket.length) { $("#err").textContent = "Add at least one finding to the report first."; return; }
+  if (state.offlineReplay) {
+    if (fmt === "json") {
+      const blob = new Blob([JSON.stringify({ engagement: engagement(), findings: state.basket, executive_summary: $("#summary").value }, null, 2)], { type: "application/json" });
+      const a = h("a", { href: URL.createObjectURL(blob), download: "penmunshi-report.json" });
+      document.body.append(a); a.click(); a.remove();
+      return;
+    }
+    alert("Running in recorded replay mode. Start PenMunshi locally ('penmunshi analyze') to generate Word DOCX, HTML, and Markdown reports.");
+    return;
+  }
+  const r = await fetch("/api/export?fmt=" + fmt, { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ engagement: engagement(), findings: state.basket, executive_summary: $("#summary").value }) });
+  if (!r.ok) { $("#err").textContent = "Export failed (" + r.status + ")"; return; }
+  const blob = await r.blob();
+  const a = h("a", { href: URL.createObjectURL(blob), download: "penmunshi-report." + fmt });
+  document.body.append(a); a.click(); a.remove();
+}
+async function draftSummary() {
+  if (!state.basket.length) { $("#err").textContent = "Add findings first, then draft the summary."; return; }
+  if (state.offlineReplay) {
+    $("#summary").value = "The security assessment identified vulnerabilities across the application targets. All findings have been verified by software checks with quotes mapped to evidence and secrets masked before reporting.";
+    return;
+  }
+  const b = $("#btn-summary"); b.disabled = true;
+  try {
+    const r = await fetch("/api/summary", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ findings: state.basket }) });
+    const j = await r.json();
+    $("#summary").value = j.summary || "";
+    if (j.lint && j.lint.length) $("#err").textContent = j.lint.map((i) => i.message).join(" ");
+  } finally { b.disabled = false; }
+}
+
+$("#btn-analyze").addEventListener("click", analyze);
+$("#btn-clear").addEventListener("click", () => { $("#notes").value = ""; $("#tool").value = ""; $("#vector").value = ""; state.files = []; renderThumbs(); $("#draft").hidden = true; $("#err").textContent = ""; });
+$("#btn-summary").addEventListener("click", draftSummary);
+document.querySelectorAll("[data-fmt]").forEach((b) => b.addEventListener("click", () => exportReport(b.dataset.fmt)));
+document.addEventListener("keydown", (e) => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") analyze(); });
+window.addEventListener("beforeunload", (e) => { if (state.basket.length) { e.preventDefault(); e.returnValue = ""; } });
+checkHealth();
+</script>
+</body>
+</html>

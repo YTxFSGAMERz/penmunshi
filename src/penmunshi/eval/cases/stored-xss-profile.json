@@ -1,0 +1,30 @@
+{
+  "id": "stored-xss-profile",
+  "split": "heldout",
+  "title": "Stored XSS in display name",
+  "asset": "https://shop.acme.test/profile",
+  "notes": "Stored XSS in the display name field (POST /profile). The value is saved unencoded and rendered in the admin user list at /admin/users.\nA payload with an img tag and an onerror handler in the display name executed when an admin opened the list.",
+  "evidence": [
+    {
+      "name": "admin-list.txt",
+      "text": "GET /admin/users HTTP/1.1\nHost: shop.acme.test\n\n<td class=\"name\">\"><img src=x onerror=alert(1)></td>"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:L/I:L/A:N",
+    "cwe": [
+      "79"
+    ],
+    "cves": [],
+    "secrets": [],
+    "score": 5.4,
+    "severity": "Medium"
+  },
+  "faults": {
+    "cwe": "99999",
+    "severity_text": "Critical",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

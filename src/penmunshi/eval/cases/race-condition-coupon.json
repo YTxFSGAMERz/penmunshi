@@ -1,0 +1,30 @@
+{
+  "id": "race-condition-coupon",
+  "split": "heldout",
+  "title": "Race condition allows multiple redemptions of one-time coupon",
+  "asset": "https://shop.acme.test/api/coupon/apply",
+  "notes": "Race condition in coupon redemption endpoint. Concurrent HTTP requests with the same coupon code bypass the single-use check, applying the discount multiple times.",
+  "evidence": [
+    {
+      "name": "race-log.txt",
+      "text": "Thread 1: POST /api/coupon/apply code=SAVE50 -> 200 OK (discount applied)\nThread 2: POST /api/coupon/apply code=SAVE50 -> 200 OK (discount applied)\nFinal cart total: -50 USD"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:H/A:N",
+    "cwe": [
+      "362"
+    ],
+    "cves": [],
+    "secrets": [],
+    "score": 5.3,
+    "severity": "Medium"
+  },
+  "faults": {
+    "cwe": "99999",
+    "severity_text": "Low",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

@@ -1,0 +1,35 @@
+{
+  "id": "outdated-jquery",
+  "split": "dev",
+  "title": "Outdated jQuery 1.12.4 with known XSS issues",
+  "asset": "https://shop.acme.test/static/js/jquery-1.12.4.min.js",
+  "notes": "The storefront loads jQuery 1.12.4 from /static/js/jquery-1.12.4.min.js.\nThis version is affected by CVE-2020-11022 and CVE-2020-11023 (XSS in htmlPrefilter). No exploitable sink was confirmed yet.",
+  "evidence": [
+    {
+      "name": "retire-output.txt",
+      "text": "retire.js 5.x scan of https://shop.acme.test\njquery 1.12.4 has known vulnerabilities:\n severity: medium; CVE-2020-11022, CVE-2020-11023; Regex in its jQuery.htmlPrefilter sometimes may introduce XSS"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
+    "cwe": [
+      "1104",
+      "79"
+    ],
+    "cves": [
+      "CVE-2020-11022",
+      "CVE-2020-11023"
+    ],
+    "secrets": [],
+    "score": 6.1,
+    "severity": "Medium"
+  },
+  "faults": {
+    "cve": "CVE-2021-44228",
+    "cwe": "99999",
+    "severity_text": "Critical",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

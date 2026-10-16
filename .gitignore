@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.env
+build/
+dist/
+# generated output - never commit real client material
+out/
+report-output/
+.penmunshi/
+data/kev.json
+# keep demo evidence, ignore anything else dropped in by accident
+examples/**/*.docx

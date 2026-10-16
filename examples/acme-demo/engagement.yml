@@ -1,0 +1,9 @@
+# Fictional engagement. shop.acme.test is a reserved test domain; no real client is involved.
+client: "ACME Shop (fictional demo)"
+project: "Web application assessment: shop.acme.test"
+tester: "Your Name"
+reviewed_by: ""
+date_range: "13 Oct to 17 Oct 2026"
+scope:
+  - "https://shop.acme.test"
+methodology: "OWASP WSTG"

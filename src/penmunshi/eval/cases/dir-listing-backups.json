@@ -1,0 +1,31 @@
+{
+  "id": "dir-listing-backups",
+  "split": "heldout",
+  "title": "Directory listing exposes database backup",
+  "asset": "https://shop.acme.test/backup/",
+  "notes": "Directory listing is enabled on /backup/. The listing shows db_dump_2026-09-30.sql.gz (48 MB) and site_2026-09-30.zip.\nI downloaded the SQL dump and confirmed that it contains the users table with hashed credentials.",
+  "evidence": [
+    {
+      "name": "listing.txt",
+      "text": "Index of /backup\nName                        Last modified       Size\ndb_dump_2026-09-30.sql.gz   2026-09-30 02:00    48M\nsite_2026-09-30.zip         2026-09-30 02:05    212M"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+    "cwe": [
+      "548",
+      "538"
+    ],
+    "cves": [],
+    "secrets": [],
+    "score": 7.5,
+    "severity": "High"
+  },
+  "faults": {
+    "cve": "CVE-2099-55555",
+    "severity_text": "Low",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

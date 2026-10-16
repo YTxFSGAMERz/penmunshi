@@ -1,0 +1,31 @@
+{
+  "id": "info-disclosure-phpinfo",
+  "split": "dev",
+  "title": "PHP configuration file phpinfo.php left exposed",
+  "asset": "https://shop.acme.test/test/phpinfo.php",
+  "notes": "A test script /test/phpinfo.php exposes sensitive server environment details: PHP version 8.2.14, module paths, system architecture, and runtime settings.",
+  "evidence": [
+    {
+      "name": "phpinfo.png",
+      "file": "assets/phpinfo.png",
+      "text": "GET /test/phpinfo.php HTTP/1.1\nHost: shop.acme.test\n\nHTTP/1.1 200 OK\nPHP Version 8.2.14\nSystem => Linux acme-web-1 5.15.0-x86_64\nServer API => FPM/FastCGI\nLoaded Configuration File => /etc/php/8.2/fpm/php.ini"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+    "cwe": [
+      "200"
+    ],
+    "cves": [],
+    "secrets": [],
+    "score": 5.3,
+    "severity": "Medium"
+  },
+  "faults": {
+    "cwe": "99999",
+    "severity_text": "High",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

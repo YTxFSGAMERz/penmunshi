@@ -1,0 +1,30 @@
+{
+  "id": "subdomain-takeover-cname",
+  "split": "dev",
+  "title": "Dangling CNAME record allows subdomain takeover",
+  "asset": "blog.shop.acme.test",
+  "notes": "Subdomain blog.shop.acme.test points to an unallocated AWS S3 bucket via CNAME. Anyone can register the bucket and host arbitrary content under the trusted domain.",
+  "evidence": [
+    {
+      "name": "dns-query.txt",
+      "text": "$ dig blog.shop.acme.test CNAME +short\nacme-blog-bucket.s3.amazonaws.com.\n$ curl -s https://blog.shop.acme.test\n<Error><Code>NoSuchBucket</Code><Message>The specified bucket does not exist</Message></Error>"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N",
+    "cwe": [
+      "284"
+    ],
+    "cves": [],
+    "secrets": [],
+    "score": 7.5,
+    "severity": "High"
+  },
+  "faults": {
+    "cwe": "99999",
+    "severity_text": "Critical",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

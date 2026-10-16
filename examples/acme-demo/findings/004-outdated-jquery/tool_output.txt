@@ -1,0 +1,3 @@
+retire.js scan of https://shop.acme.test
+jquery 1.12.4 has known vulnerabilities:
+ severity: medium; CVE-2020-11022, CVE-2020-11023; Regex in its jQuery.htmlPrefilter sometimes may introduce XSS

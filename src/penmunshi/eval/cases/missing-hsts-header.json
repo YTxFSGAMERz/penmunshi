@@ -1,0 +1,30 @@
+{
+  "id": "missing-hsts-header",
+  "split": "dev",
+  "title": "Missing Strict-Transport-Security (HSTS) header",
+  "asset": "https://shop.acme.test",
+  "notes": "The web server does not send a Strict-Transport-Security header on HTTPS responses, leaving users vulnerable to SSL stripping attacks on insecure networks.",
+  "evidence": [
+    {
+      "name": "headers.txt",
+      "text": "HTTP/1.1 200 OK\nServer: nginx/1.24.0\nContent-Type: text/html\nConnection: keep-alive"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:N/A:N",
+    "cwe": [
+      "319"
+    ],
+    "cves": [],
+    "secrets": [],
+    "score": 3.1,
+    "severity": "Low"
+  },
+  "faults": {
+    "cwe": "99999",
+    "severity_text": "Critical",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

@@ -1,0 +1,30 @@
+{
+  "id": "reflected-xss-search",
+  "split": "dev",
+  "title": "Reflected XSS in search",
+  "asset": "https://shop.acme.test/search",
+  "notes": "Reflected XSS in the search box (GET /search?q=).\nThe q parameter is echoed unencoded inside the results heading.\nPayload <script>alert(document.domain)</script> executes in Chrome and no CSP header is set.\nThe victim has to open a crafted link.",
+  "evidence": [
+    {
+      "name": "response.txt",
+      "text": "HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\nServer: nginx\n\n<h2>Results for <script>alert(document.domain)</script></h2>"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
+    "cwe": [
+      "79"
+    ],
+    "cves": [],
+    "secrets": [],
+    "score": 6.1,
+    "severity": "Medium"
+  },
+  "faults": {
+    "cwe": "99999",
+    "severity_text": "Critical",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

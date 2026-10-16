@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Penetration Test Report: {{ e.project }}</title>
+<style>
+  :root { --ink:#18212b; --muted:#5b6773; --rule:#d5dad3; --wash:#f4f6f3;
+          --crit:#9b1239; --high:#c2410c; --med:#a16207; --low:#1d5f8a; --info:#5b6773;
+          --ok:#1e7b54; --warn:#9a6700; --bad:#b3261e; }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: var(--ink); background: #fff; line-height: 1.55;
+         font: 15px/1.55 "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 40px 28px 80px; }
+  h1, h2, h3 { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; line-height: 1.25; }
+  h1 { font-size: 2.2rem; margin: 0 0 4px; }
+  h2 { font-size: 1.35rem; margin: 2.2rem 0 .6rem; padding-top: .6rem; border-top: 1px solid var(--rule); }
+  h3 { font-size: 1.05rem; margin: 1.4rem 0 .3rem; }
+  .sub { color: var(--muted); margin: 0 0 1.4rem; font-size: 1.15rem; }
+  table { border-collapse: collapse; width: 100%; margin: .6rem 0 1rem; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { width: 11rem; color: var(--muted); font-weight: 600; }
+  table.grid th { width: auto; background: var(--wash); }
+  .banner { background: var(--wash); border-left: 4px solid var(--warn); padding: 10px 14px; margin: 1rem 0; font-size: .95rem; }
+  .chip { display: inline-block; padding: 2px 9px; border-radius: 3px; color: #fff; font-size: .8rem;
+          font-family: "Segoe UI", system-ui, sans-serif; font-weight: 600; vertical-align: middle; }
+  .chip.crit { background: var(--crit); } .chip.high { background: var(--high); }
+  .chip.med { background: var(--med); } .chip.low { background: var(--low); }
+  .chip.info, .chip.unrated { background: var(--info); }
+  pre { background: #0f141a; color: #e6e9ec; padding: 12px 14px; border-radius: 4px; overflow-x: auto;
+        font: 12.5px/1.5 "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace; white-space: pre-wrap; }
+  figure { margin: .6rem 0 1rem; } figcaption { font-size: .85rem; color: var(--muted); margin-bottom: 4px; }
+  code { font: .88em Consolas, ui-monospace, monospace; background: var(--wash); padding: 1px 4px; border-radius: 3px; }
+  .ok { color: var(--ok); } .warn { color: var(--warn); } .bad { color: var(--bad); }
+  .small { font-size: .85rem; color: var(--muted); }
+
+  @media print {
+    @page {
+      size: A4;
+      margin: 20mm 15mm 20mm 15mm;
+      @top-right {
+        content: "{{ e.project }}";
+        font-size: 8pt;
+        color: #5b6773;
+      }
+      @bottom-left {
+        content: "CONFIDENTIAL - {{ e.client }}";
+        font-size: 8pt;
+        color: #5b6773;
+      }
+      @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 8pt;
+        color: #5b6773;
+      }
+    }
+    body {
+      background: #fff;
+      color: #18212b;
+      font-size: 10.5pt;
+      line-height: 1.45;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    main {
+      max-width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    .cover-page {
+      page-break-after: always;
+      break-after: page;
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .findings-summary {
+      page-break-after: always;
+      break-after: page;
+    }
+    .finding {
+      page-break-before: always;
+      break-before: page;
+    }
+    .appendix {
+      page-break-before: always;
+      break-before: page;
+    }
+    pre, table, figure, .banner {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    pre {
+      background: #f8fafc !important;
+      color: #0f141a !important;
+      border: 1px solid var(--rule);
+      white-space: pre-wrap;
+    }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+    .chip {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  }
+</style>
+</head>
+<body>
+<main>
+<header class="cover-page">
+  <h1>Penetration Test Report</h1>
+  <p class="sub">{{ e.project }}</p>
+  <table>
+    <tr><th>Client</th><td>{{ e.client }}</td></tr>
+    <tr><th>Tester</th><td>{{ e.tester or '-' }}</td></tr>
+    <tr><th>Dates</th><td>{{ e.date_range or '-' }}</td></tr>
+    <tr><th>Methodology</th><td>{{ e.methodology }}</td></tr>
+    <tr><th>Scope</th><td>{{ e.scope | join(', ') if e.scope else '-' }}</td></tr>
+    <tr><th>Reviewed by</th><td>{{ e.reviewed_by or '(pending human review)' }}</td></tr>
+  </table>
+  <p class="banner">AI-assisted draft. Scores, identifiers, quotes and secret masking were checked by software.
+  A human tester must review every finding before delivery.</p>
+</header>
+
+<section class="findings-summary">
+  <h2>Executive summary</h2>
+  {% if report.executive_summary.strip() %}
+    {% for p in report.executive_summary.split('\n\n') if p.strip() %}<p>{{ p.strip() }}</p>{% endfor %}
+  {% else %}<p class="small">No summary generated.</p>{% endif %}
+  <table class="grid">
+    <tr><th>Severity</th><th>Findings Count</th></tr>
+    {% for name, n in counts.items() %}<tr><td><span class="chip {{ sev_class(name) }}">{{ label(name) }}</span></td><td>{{ n }}</td></tr>{% endfor %}
+  </table>
+
+  <h2>Findings overview</h2>
+  <table class="grid">
+    <tr><th>ID</th><th>Title</th><th>Severity</th><th>CVSS</th><th>Status</th></tr>
+    {% for f in findings %}<tr>
+      <td><a href="#f{{ loop.index }}">{{ f.id }}</a></td><td>{{ f.title }}</td>
+      <td><span class="chip {{ sev_class(f.severity) }}">{{ label(f.severity) }}</span></td>
+      <td>{{ '%.1f'|format(f.cvss_score) if f.cvss_score is not none else '-' }}</td>
+      <td class="{{ 'ok' if f.status == 'ready' else 'warn' }}">{{ f.status | replace('_', ' ') }}</td>
+    </tr>{% endfor %}
+  </table>
+</section>
+
+{% for f in findings %}
+<section class="finding" id="f{{ loop.index }}">
+  <h2><span class="chip {{ sev_class(f.severity) }}">{{ label(f.severity) }}{% if f.cvss_score is not none %} {{ '%.1f'|format(f.cvss_score) }}{% endif %}</span> {{ f.id }}: {{ f.title }}</h2>
+  <table>
+    <tr><th>CVSS vector</th><td><code>{{ f.cvss_vector or 'n/a' }}</code> <span class="small">(computed by software{{ ', set by tester' if f.severity_source == 'tester' else '' }})</span></td></tr>
+    <tr><th>Affected asset</th><td>{{ f.affected_asset or '-' }}</td></tr>
+    <tr><th>Weakness</th><td>{% for c in f.cwe %}{{ c.id }} {{ c.name }}{% if not loop.last %}<br>{% endif %}{% else %}-{% endfor %}</td></tr>
+    <tr><th>CVE</th><td>{% for c in f.cve %}{{ c.id }}{% if c.known_exploited %} <span class="bad">(known exploited)</span>{% endif %}{% if not loop.last %}, {% endif %}{% else %}-{% endfor %}</td></tr>
+    <tr><th>Confidence</th><td>{{ f.confidence | replace('_', ' ') }}</td></tr>
+  </table>
+  <h3>Summary</h3><p>{{ f.summary }}</p>
+  <h3>Description</h3><p>{{ f.description }}</p>
+  <h3>Steps to reproduce</h3>
+  {% if f.steps_to_reproduce %}<ol>{% for s in f.steps_to_reproduce %}<li>{{ s }}</li>{% endfor %}</ol>{% else %}<p class="small">None provided.</p>{% endif %}
+  <h3>Impact</h3><p>{{ f.impact }}</p>
+  <h3>Remediation</h3>
+  {% if f.remediation %}<ul>{% for s in f.remediation %}<li>{{ s }}</li>{% endfor %}</ul>{% else %}<p class="small">None provided.</p>{% endif %}
+  {% for ev in f.evidence if ev.transcript.strip() or ev.redacted_image_data_uri %}
+    {% if loop.first %}<h3>Evidence</h3>{% endif %}
+    <figure>
+      <figcaption>{{ ev.name }} ({{ ev.kind }})</figcaption>
+      {% if ev.redacted_image_data_uri %}
+        <div style="margin: 8px 0;"><img src="{{ ev.redacted_image_data_uri }}" alt="Redacted screenshot: {{ ev.name }}" style="max-width:100%; border:1px solid var(--rule); border-radius:4px; display:block;" /></div>
+      {% endif %}
+      {% if ev.transcript.strip() %}
+        <pre>{{ ev.transcript }}</pre>
+      {% endif %}
+    </figure>
+  {% endfor %}
+</section>
+{% endfor %}
+
+<section class="appendix">
+  <h2>Appendix: verification log</h2>
+  <p class="small">What the software checked, and what it changed or flagged. Nothing here was written by the model.</p>
+  {% for f in findings %}
+    <h3>{{ f.id }}</h3>
+    <ul>
+      <li>Claims verified against evidence: {{ f.claims | selectattr('supported') | list | length }} of {{ f.claims | length }}</li>
+      {% for r in f.removed_ids %}<li class="warn">Removed {{ r.kind | upper }} <code>{{ r.id }}</code>: {{ r.reason }}</li>{% endfor %}
+      {% for c in f.claims if not c.supported %}<li class="warn">Unsupported claim: {{ c.text }}</li>{% endfor %}
+      {% for s in f.secrets %}<li>Masked {{ s.kind }} <code>{{ s.preview }}</code> in {{ s.source }}</li>{% endfor %}
+      {% for i in f.lint %}<li class="{{ 'bad' if i.level == 'error' else ('warn' if i.level == 'warn' else '') }}">{{ i.level | upper }} {{ i.code }}: {{ i.message }}</li>{% endfor %}
+    </ul>
+  {% endfor %}
+  <p class="small">Generated locally by PenMunshi {{ report.tool.get('version', '') }} with model {{ report.tool.get('model', '') }} on {{ report.generated_at }}.</p>
+</section>
+</main>
+</body>
+</html>

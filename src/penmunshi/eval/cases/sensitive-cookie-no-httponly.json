@@ -1,0 +1,30 @@
+{
+  "id": "sensitive-cookie-no-httponly",
+  "split": "dev",
+  "title": "Session cookie missing HttpOnly and Secure flags",
+  "asset": "https://shop.acme.test/login",
+  "notes": "Session cookie session_id is issued without the HttpOnly or Secure flags in Set-Cookie, making it readable by JavaScript and vulnerable to theft via XSS.",
+  "evidence": [
+    {
+      "name": "cookie-response.txt",
+      "text": "HTTP/1.1 200 OK\nSet-Cookie: session_id=sess_9876543210abcdef; Path=/\nContent-Type: application/json"
+    }
+  ],
+  "gold": {
+    "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:N/A:N",
+    "cwe": [
+      "1004"
+    ],
+    "cves": [],
+    "secrets": [],
+    "score": 4.3,
+    "severity": "Medium"
+  },
+  "faults": {
+    "cwe": "99999",
+    "severity_text": "High",
+    "fake_claim": true
+  },
+  "seeded_secrets": [],
+  "tool_output": ""
+}

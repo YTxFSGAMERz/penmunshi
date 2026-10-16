@@ -1,0 +1,29 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Lint
+        run: ruff check .
+      - name: Model-free tests (no Ollama needed)
+        run: pytest
+      - name: Verification-layer eval with injected faults
+        run: python -m penmunshi eval --backend fake --out eval-fake.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: eval-fake-py${{ matrix.python-version }}
+          path: eval-fake.md
